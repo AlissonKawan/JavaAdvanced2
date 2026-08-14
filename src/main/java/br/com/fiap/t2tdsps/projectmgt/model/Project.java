@@ -1,16 +1,14 @@
 package br.com.fiap.t2tdsps.projectmgt.model;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
 @Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Data
 public class Project {
 
+    @Setter @Getter
     private Long id;
     private String name;
     private String description;
@@ -18,4 +16,15 @@ public class Project {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    //Maquina de estado (já enriquencendo a entidade)
+    public void setStatus(ProjectStatus status) {
+        if (this.status == null && status != ProjectStatus.PLANEJADO) {
+            throw new IllegalArgumentException("O status do projeto deve ser PLANEJADO");
+        } else if ((this.status == ProjectStatus.CONCLUIDO || status == ProjectStatus.CANCELADO)
+                || (this.status == ProjectStatus.PLANEJADO && (status == ProjectStatus.CONCLUIDO))) {
+            throw new IllegalArgumentException("Este projeto não pode ser alterado para " + status + "");
+        } else {
+            this.status = status;
+        }
+    }
 }
