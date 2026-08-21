@@ -1,10 +1,12 @@
 package br.com.fiap.t2tdsps.projectmgt.model;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
 
+@NoArgsConstructor
 @Getter
 public class Project {
 
@@ -15,6 +17,16 @@ public class Project {
     private ProjectStatus status;
     private LocalDate startDate;
     private LocalDate endDate;
+    private Boolean deleted;
+
+    public Project(Long id, String name, String description, ProjectStatus status, LocalDate startDate, LocalDate endDate) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.status = status;
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
 
     //Maquina de estado (já enriquencendo a entidade)
     public void setStatus(ProjectStatus status) {

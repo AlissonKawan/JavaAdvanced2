@@ -20,4 +20,8 @@ public class Task {
     // `null` para qualquer campo ausente no JSON — o que quebra em tempo de desserialização para um
     // primitivo. O default "false" continua garantido no TaskService.create(), não aqui.
     private Boolean done;
+
+    public Task(Long id) {
+        this.id = id;
+    }
 }

@@ -1,5 +1,7 @@
 package br.com.fiap.t2tdsps.projectmgt.controller;
 
+import br.com.fiap.t2tdsps.projectmgt.dto.ProjectDto;
+import br.com.fiap.t2tdsps.projectmgt.mapper.ProjectMapper;
 import br.com.fiap.t2tdsps.projectmgt.model.Project;
 import br.com.fiap.t2tdsps.projectmgt.service.ProjectService;
 import org.springframework.http.ResponseEntity;
@@ -20,15 +22,15 @@ public class ProjectController {
     }
 
     @GetMapping
-    public List<Project> getAllProjects() {
-        return projectService.findAll();
+    public List<ProjectDto> getAllProjects() {
+        return ProjectMapper.toDto(projectService.findAll());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Project> findById(@PathVariable Long id) {
+    public ResponseEntity<ProjectDto> findById(@PathVariable Long id) {
         Optional<Project> p = this.projectService.findById(id);
         if (p.isPresent()) {
-            return ResponseEntity.ok(p.get());
+            return ResponseEntity.ok(ProjectMapper.toDto(p.get()));
         }
         return ResponseEntity.notFound().build();
     }
@@ -39,8 +41,21 @@ public class ProjectController {
         return ResponseEntity.created(URI.create("/api/projects/" + salvo.getId())).body(salvo);
     }
 
-    //pra casa Put e Delete  -> PutMapping e DeleteMapping
-    //aula que vem vamos testar endpoints - vamos ver o que realmente precisou de gets e sets
-    // como fazer valer a entidade rica e hateoas
+    @PutMapping("/{id}")
+    public ResponseEntity<Project> updateProject(@PathVariable Long id, @RequestBody Project project) {
+        Optional<Project> p = this.projectService.update(id, project);
+        if (p.isPresent()) {
+            return ResponseEntity.ok(p.get());
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
+        if (this.projectService.delete(id)) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.notFound().build();
+    }
 
 }
