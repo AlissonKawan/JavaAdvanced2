@@ -233,7 +233,7 @@ Dependências novas no `pom.xml`:
 </dependency>
 ```
 
-Vamos migrar de `application.properties` para `application.yml` (mais legível, hierárquico):
+Vamos migrar de `application.yml` para `application.yml` (mais legível, hierárquico):
 
 ```yaml
 spring:
