@@ -33,3 +33,6 @@ build/
 .vscode/
 .planoAula
 .DS_Store
+
+### H2 database files ###
+/data/
