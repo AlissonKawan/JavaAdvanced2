@@ -1,6 +1,7 @@
 package br.com.fiap.t2tdsps.projectmgt.service;
 
 import br.com.fiap.t2tdsps.projectmgt.model.Project;
+import br.com.fiap.t2tdsps.projectmgt.model.ProjectStatus;
 import br.com.fiap.t2tdsps.projectmgt.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,10 @@ public class ProjectService {
         }
         this.projectRepository.deleteById(id);
         return true;
+    }
+
+    public List<Project> findByStatus(ProjectStatus status) {
+        return this.projectRepository.findByStatus(status);
     }
 
 }
