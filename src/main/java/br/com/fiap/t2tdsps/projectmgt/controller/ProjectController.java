@@ -48,10 +48,16 @@ public class ProjectController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProjectResponse> findById(@PathVariable Long id) {
-        return projectService.findById(id)
-                .map(ProjectMapper::toResponse)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+//        return projectService.findById(id)
+//                .map(ProjectMapper::toResponse)
+//                .map(ResponseEntity::ok)
+//                .orElseGet(() -> ResponseEntity.notFound().build());
+
+        return ResponseEntity.ok(
+                ProjectMapper.toResponse( //mapeando para dto
+                        projectService.findById(id) // objeto retornando da busca ao banco
+                )
+        );
     }
 
     @PostMapping
@@ -69,14 +75,9 @@ public class ProjectController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ProjectResponse> updateProject(@PathVariable Long id, @RequestBody ProjectRequest request) {
-        Optional<Project> existing = projectService.findById(id);
-        if (existing.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
         // Mutamos o objeto já gerenciado, sem tocar em "status": o PUT aqui não é dono
         // do ciclo de vida do projeto (isso é papel do setStatus, numa operação à parte).
-        Project project = existing.get();
+        Project project =projectService.findById(id);
         project.setName(request.name());
         project.setDescription(request.description());
         project.setStartDate(request.startDate());

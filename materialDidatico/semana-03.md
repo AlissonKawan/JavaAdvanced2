@@ -218,7 +218,7 @@ qualquer falha — em vez de um formato para `404`, outro (ou nenhum, um HTML de
 | `ResourceNotFoundException` | `404 Not Found` | `GET`/`PUT`/`DELETE` de `/api/projects/{id}` (ou `/api/milestones/{id}`) inexistente |
 | `InvalidStatusTransitionException` | `409 Conflict` | `Project.setStatus()` rejeita a transição (ex.: tentar sair de `CONCLUIDO`) |
 | `HttpMessageNotReadableException` | `400 Bad Request` | JSON malformado, **ou** `ProjectRequest`/`MilestoneRequest` com dado inválido (`name` em branco, `endDate` antes de `startDate`) — o construtor compacto do `record` lança `IllegalArgumentException` *durante a desserialização*, e o Spring embrulha isso automaticamente numa `HttpMessageNotReadableException` antes mesmo do controller ser chamado |
-| `MethodArgumentTypeMismatchException` | `400 Bad Request` | `?status=XYZ` fora do enum `ProjectStatus` (o Spring já devolveria `400` sozinho aqui — interceptamos mesmo assim pra manter o corpo no formato `ErrorResponse`) |
+| `MethodArgumentTypeMismatchException` | `400 Bad Request` | `?status=XYZ` fora do enum `ProjectStatus` (o Spring já devolveria `400` sozinho aqui — interceptamos mesmo assim pra manter o corpo no formato `ErrorCustomResponse`) |
 | `IllegalArgumentException` (genérico, defensivo) | `400 Bad Request` | qualquer outra validação manual lançada explicitamente em código nosso, fora do fluxo de desserialização |
 | `Exception` (catch-all) | `500 Internal Server Error` | qualquer bug não previsto — nunca deixamos vazar stack trace pro cliente |
 
@@ -551,10 +551,10 @@ public class ProjectController {
    batendo com o que existe no H2 console).
 2. `GET /api/projects?page=0&size=2&sort=name,asc` → conferir ordenação.
 3. `GET /api/projects?status=EM_ANDAMENTO&page=0&size=5` → filtro + paginação juntos.
-4. `GET /api/projects/999` → `404`, corpo `ErrorResponse` com `"message": "Project com id 999 não encontrado"`.
-5. `POST /api/projects` com `"name": ""` → `400`, corpo `ErrorResponse`.
-6. Criar um projeto, mudar status pra `CONCLUIDO`, tentar mudar de novo → `409`, corpo `ErrorResponse`.
-7. `GET /api/projects?status=XYZ` → `400`, já no formato `ErrorResponse` (não mais o formato padrão do Spring).
+4. `GET /api/projects/999` → `404`, corpo `ErrorCustomResponse` com `"message": "Project com id 999 não encontrado"`.
+5. `POST /api/projects` com `"name": ""` → `400`, corpo `ErrorCustomResponse`.
+6. Criar um projeto, mudar status pra `CONCLUIDO`, tentar mudar de novo → `409`, corpo `ErrorCustomResponse`.
+7. `GET /api/projects?status=XYZ` → `400`, já no formato `ErrorCustomResponse` (não mais o formato padrão do Spring).
 
 ---
 
@@ -571,7 +571,7 @@ lançando `ResourceNotFoundException`.
 - [ ] `MilestoneService.update`/`delete` usam `getById` internamente (sem `Optional`/`existsById` manual).
 - [ ] `MilestoneController.findById`/`update`/`delete` não têm mais `if (present)`/`orElseGet(notFound)` — o
       `GlobalExceptionHandler` cuida do `404`.
-- [ ] Testado no Postman: `GET /api/milestones/999` → `404` com corpo `ErrorResponse` (mesmo formato usado por
+- [ ] Testado no Postman: `GET /api/milestones/999` → `404` com corpo `ErrorCustomResponse` (mesmo formato usado por
       `Project`).
 
 ### Exercício 2 — Paginação em `Milestone`
@@ -605,4 +605,4 @@ está "travada". (Reabrir uma milestone concluída fica fora do escopo por enqua
 - [ ] `GlobalExceptionHandler` ganha um `@ExceptionHandler` pra essa exceção, mapeando pra `409 Conflict`.
 - [ ] Testado no Postman: criar uma milestone, mudar status pra `CONCLUIDA` (direto no H2 console ou via algum
       endpoint auxiliar, já que não existe endpoint de mudança de status pra `Milestone` ainda), tentar `PUT` ou
-      `DELETE` nela → `409` com corpo `ErrorResponse`.
+      `DELETE` nela → `409` com corpo `ErrorCustomResponse`.

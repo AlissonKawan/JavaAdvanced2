@@ -1,5 +1,6 @@
 package br.com.fiap.t2tdsps.projectmgt.service;
 
+import br.com.fiap.t2tdsps.projectmgt.exceptions.ResourceNotFoundException;
 import br.com.fiap.t2tdsps.projectmgt.model.Project;
 import br.com.fiap.t2tdsps.projectmgt.model.ProjectStatus;
 import br.com.fiap.t2tdsps.projectmgt.repository.ProjectRepository;
@@ -35,8 +36,14 @@ public class ProjectService {
         );
     }
 
-    public Optional<Project> findById(Long id) {
-        return this.projectRepository.findById(id);
+    public Project findById(Long id) {
+        Optional<Project> byId = this.projectRepository.findById(id);
+        if (!byId.isPresent()){
+            throw new ResourceNotFoundException("projeto",id);
+        }
+        return byId.get();
+//        Essa seria uma maneira mais rapida de chegar ao mesmo resultado, dispenseria todas as linhas acima desse metodo
+//        return this.projectRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("projeto",id));
     }
 
     public Project create(Project project) {
