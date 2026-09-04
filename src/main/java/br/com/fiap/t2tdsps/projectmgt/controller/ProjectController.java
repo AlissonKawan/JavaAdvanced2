@@ -2,10 +2,12 @@ package br.com.fiap.t2tdsps.projectmgt.controller;
 
 import br.com.fiap.t2tdsps.projectmgt.dto.ProjectRequest;
 import br.com.fiap.t2tdsps.projectmgt.dto.ProjectResponse;
+import br.com.fiap.t2tdsps.projectmgt.mapper.PageResponse;
 import br.com.fiap.t2tdsps.projectmgt.mapper.ProjectMapper;
 import br.com.fiap.t2tdsps.projectmgt.model.Project;
 import br.com.fiap.t2tdsps.projectmgt.model.ProjectStatus;
 import br.com.fiap.t2tdsps.projectmgt.service.ProjectService;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +25,9 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @GetMapping
+    //since em geral se coloca a versão
+    @Deprecated(since = "Foi substituido pelo método que pagina na semana 4")
+//    @GetMapping
     public List<ProjectResponse> getAllProjects(@RequestParam(required = false) ProjectStatus status) {
         List<Project> projects = status != null
                 ? projectService.findByStatus(status)
@@ -32,6 +36,14 @@ public class ProjectController {
         return projects.stream()
                 .map(ProjectMapper::toResponse)
                 .toList();
+    }
+
+    //Desafio: Sem alterar o PageResponse que criamos, retornar uma PageResposnse<ProjectReponse>!!!!
+    @GetMapping
+    public PageResponse<Project> getAllProjects(@RequestParam(required = false) ProjectStatus status,
+                                                @RequestParam(required = false,defaultValue = "0") Integer page,
+                                                @RequestParam(required = false,defaultValue = "10") Integer sizePage){
+        return PageResponse.from(this.projectService.findAll(page, sizePage));
     }
 
     @GetMapping("/{id}")

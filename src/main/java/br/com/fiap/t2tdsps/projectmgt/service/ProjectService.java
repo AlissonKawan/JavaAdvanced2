@@ -3,6 +3,10 @@ package br.com.fiap.t2tdsps.projectmgt.service;
 import br.com.fiap.t2tdsps.projectmgt.model.Project;
 import br.com.fiap.t2tdsps.projectmgt.model.ProjectStatus;
 import br.com.fiap.t2tdsps.projectmgt.repository.ProjectRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,6 +23,16 @@ public class ProjectService {
 
     public List<Project> findAll(){
         return this.projectRepository.findAll();
+    }
+
+    //size = quantidade de itens por página
+    // Exemplo pagina de 2 pagina, com paginas de ate 10 itens
+    // OFFSET (pagina * quantiadade de itens por pagina)
+    //vai fazer um query no db =>  select * from PROJECT OFFSET 10 LIMIT 10
+    public Page<Project> findAll(Integer page, Integer size){
+        return this.projectRepository.findAll(
+                Pageable.ofSize(size).withPage(page)
+        );
     }
 
     public Optional<Project> findById(Long id) {
