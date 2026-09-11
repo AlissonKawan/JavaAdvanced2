@@ -160,7 +160,7 @@ O mesmo padrão se repete pra `Milestone` (`MilestoneStatusRequest`, `MilestoneS
 
 > Nota sobre `@RestControllerAdvice`: se a Semana 3 (paginação + exceções) já estiver implementada quando esse
 > desafio for feito, `changeStatus()` lançando `IllegalArgumentException`/`InvalidStatusTransitionException` já cai
-> automaticamente em `400`/`409` com `ErrorResponse` — não precisa tratar nada extra no controller. Se ainda não
+> automaticamente em `400`/`409` com `ErrorCustomResponse` — não precisa tratar nada extra no controller. Se ainda não
 > estiver, cada `IllegalArgumentException` da máquina de estados vira um `500` genérico por enquanto (mesmo ponto
 > solto já documentado nas Semanas 2 e 3).
 

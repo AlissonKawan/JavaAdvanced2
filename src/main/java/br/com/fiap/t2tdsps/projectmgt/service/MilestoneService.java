@@ -1,11 +1,13 @@
 package br.com.fiap.t2tdsps.projectmgt.service;
 
+import br.com.fiap.t2tdsps.projectmgt.exceptions.MilestoneAlreadyCompletedException;
+import br.com.fiap.t2tdsps.projectmgt.exceptions.ResourceNotFoundException;
 import br.com.fiap.t2tdsps.projectmgt.model.Milestone;
+import br.com.fiap.t2tdsps.projectmgt.model.MilestoneStatus;
 import br.com.fiap.t2tdsps.projectmgt.repository.MilestoneRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MilestoneService {
@@ -16,12 +18,22 @@ public class MilestoneService {
         this.milestoneRepository = milestoneRepository;
     }
 
-    public List<Milestone> findAll() {
-        return milestoneRepository.findAll();
+    public Page<Milestone> findAll(Integer page, Integer size) {
+        return milestoneRepository.findAll(
+                Pageable.ofSize(size).withPage(page)
+        );
     }
 
-    public Optional<Milestone> findById(Long id) {
-        return milestoneRepository.findById(id);
+    public Page<Milestone> findByProjectId(Long projectId, Integer page, Integer size) {
+        return milestoneRepository.findByProjectId(
+                projectId,
+                Pageable.ofSize(size).withPage(page)
+        );
+    }
+
+    public Milestone findById(Long id) {
+        return milestoneRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Milestone", id));
     }
 
     public Milestone create(Milestone milestone) {
@@ -29,18 +41,20 @@ public class MilestoneService {
         return milestoneRepository.save(milestone);
     }
 
-    public Optional<Milestone> update(Long id, Milestone updated) {
-        return milestoneRepository.findById(id).map(existing -> {
-            updated.setId(id);
-            return milestoneRepository.save(updated);
-        });
+    public Milestone update(Long id, Milestone updated) {
+        Milestone existing = findById(id); // garante que existe - lança ResourceNotFoundException se não
+        if (existing.getStatus() == MilestoneStatus.CONCLUIDA) {
+            throw new MilestoneAlreadyCompletedException(id);
+        }
+        updated.setId(id);
+        return milestoneRepository.save(updated);
     }
 
-    public boolean delete(Long id) {
-        if (!milestoneRepository.existsById(id)) {
-            return false;
+    public void delete(Long id) {
+        Milestone milestone = findById(id); // garante que existe - lança ResourceNotFoundException se não
+        if (milestone.getStatus() == MilestoneStatus.CONCLUIDA) {
+            throw new MilestoneAlreadyCompletedException(id);
         }
-        milestoneRepository.deleteById(id);
-        return true;
+        milestoneRepository.delete(milestone);
     }
 }

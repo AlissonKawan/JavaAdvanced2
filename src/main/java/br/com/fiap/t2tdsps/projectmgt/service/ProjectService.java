@@ -36,6 +36,13 @@ public class ProjectService {
         );
     }
 
+    public Page<Project> findByStatus(ProjectStatus status, Integer page, Integer size) {
+        return this.projectRepository.findByStatus(
+                status,
+                Pageable.ofSize(size).withPage(page)
+        );
+    }
+
     public Project findById(Long id) {
         Optional<Project> byId = this.projectRepository.findById(id);
         if (!byId.isPresent()){
@@ -58,12 +65,9 @@ public class ProjectService {
         });
     }
 
-    public boolean delete(Long id) {
-        if (!this.projectRepository.existsById(id)) {
-            return false;
-        }
-        this.projectRepository.deleteById(id);
-        return true;
+    public void delete(Long id) {
+        Project project = findById(id); // garante que existe - lança ResourceNotFoundException se não
+        this.projectRepository.delete(project);
     }
 
     public List<Project> findByStatus(ProjectStatus status) {

@@ -38,12 +38,18 @@ public class ProjectController {
                 .toList();
     }
 
-    //Desafio: Sem alterar o PageResponse que criamos, retornar uma PageResposnse<ProjectReponse>!!!!
+    // Desafio resolvido: mapeamos Page<Project> -> Page<ProjectResponse> (Page.map preserva a paginação)
+    // antes de embrulhar no PageResponse - sem isso, a entidade JPA vazava direto na resposta.
+    // O filtro "status" também estava sendo ignorado (nunca era usado); agora ele decide qual busca paginada chamar.
     @GetMapping
-    public PageResponse<Project> getAllProjects(@RequestParam(required = false) ProjectStatus status,
+    public PageResponse<ProjectResponse> getAllProjects(@RequestParam(required = false) ProjectStatus status,
                                                 @RequestParam(required = false,defaultValue = "0") Integer page,
                                                 @RequestParam(required = false,defaultValue = "10") Integer sizePage){
-        return PageResponse.from(this.projectService.findAll(page, sizePage));
+        Page<Project> pageResult = status != null
+                ? this.projectService.findByStatus(status, page, sizePage)
+                : this.projectService.findAll(page, sizePage);
+
+        return PageResponse.from(pageResult.map(ProjectMapper::toResponse));
     }
 
     @GetMapping("/{id}")
@@ -89,10 +95,8 @@ public class ProjectController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProject(@PathVariable Long id) {
-        if (this.projectService.delete(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        this.projectService.delete(id); // lança ResourceNotFoundException se não existir
+        return ResponseEntity.noContent().build();
     }
 
 }

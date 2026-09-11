@@ -4,19 +4,16 @@ import br.com.fiap.t2tdsps.projectmgt.assembler.MilestoneModelAssembler;
 import br.com.fiap.t2tdsps.projectmgt.dto.MilestoneRequest;
 import br.com.fiap.t2tdsps.projectmgt.dto.MilestoneResponse;
 import br.com.fiap.t2tdsps.projectmgt.mapper.MilestoneMapper;
+import br.com.fiap.t2tdsps.projectmgt.mapper.PageResponse;
 import br.com.fiap.t2tdsps.projectmgt.model.Milestone;
 import br.com.fiap.t2tdsps.projectmgt.model.MilestoneStatus;
 import br.com.fiap.t2tdsps.projectmgt.service.MilestoneService;
-import org.springframework.hateoas.CollectionModel;
+import org.springframework.data.domain.Page;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.Optional;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 @RequestMapping("/api/milestones")
@@ -30,21 +27,24 @@ public class MilestoneController {
         this.milestoneModelAssembler = milestoneModelAssembler;
     }
 
+    // Decisão de escopo da Semana 3 (Exercício 2): combinar Page<T> com HATEOAS "de verdade" usa o
+    // PagedResourcesAssembler do Spring HATEOAS, fora do escopo daqui - então o findAll perde o CollectionModel
+    // e passa a devolver PageResponse<MilestoneResponse>. O findById continua com HATEOAS normalmente.
     @GetMapping
-    public CollectionModel<EntityModel<MilestoneResponse>> findAll() {
-        var milestones = milestoneService.findAll().stream()
-                .map(milestoneModelAssembler::toModel)
-                .toList();
+    public PageResponse<MilestoneResponse> findAll(@RequestParam(required = false) Long projectId,
+                                                     @RequestParam(required = false, defaultValue = "0") Integer page,
+                                                     @RequestParam(required = false, defaultValue = "10") Integer sizePage) {
+        Page<Milestone> pageResult = projectId != null
+                ? milestoneService.findByProjectId(projectId, page, sizePage)
+                : milestoneService.findAll(page, sizePage);
 
-        return CollectionModel.of(milestones, linkTo(methodOn(MilestoneController.class).findAll()).withSelfRel());
+        return PageResponse.from(pageResult.map(MilestoneMapper::toResponse));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<EntityModel<MilestoneResponse>> findById(@PathVariable Long id) {
-        return milestoneService.findById(id)
-                .map(milestoneModelAssembler::toModel)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+        Milestone milestone = milestoneService.findById(id); // lança ResourceNotFoundException se não existir
+        return ResponseEntity.ok(milestoneModelAssembler.toModel(milestone));
     }
 
     // Exemplo usando programacao funcional para enriquecer com mais links
@@ -72,26 +72,19 @@ public class MilestoneController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MilestoneResponse> update(@PathVariable Long id, @RequestBody MilestoneRequest request) {
-        Optional<Milestone> existing = milestoneService.findById(id);
-        if (existing.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Milestone milestone = existing.get();
+        Milestone milestone = milestoneService.findById(id); // lança ResourceNotFoundException se não existir
         milestone.setProjectId(request.projectId());
         milestone.setName(request.name());
         milestone.setDueDate(request.dueDate());
         // status preservado, mesma lógica do Project: PUT aqui não mexe no ciclo de vida da milestone
 
-        Milestone updated = milestoneService.update(id, milestone).orElseThrow();
+        Milestone updated = milestoneService.update(id, milestone); // lança MilestoneAlreadyCompletedException se travada
         return ResponseEntity.ok(MilestoneMapper.toResponse(updated));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
-        if (milestoneService.delete(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        milestoneService.delete(id); // lança ResourceNotFoundException/MilestoneAlreadyCompletedException
+        return ResponseEntity.noContent().build();
     }
 }
