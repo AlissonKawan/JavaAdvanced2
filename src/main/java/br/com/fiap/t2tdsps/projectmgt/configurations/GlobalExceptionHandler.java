@@ -13,7 +13,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 
 import java.time.LocalDateTime;
 
-@RestControllerAdvice
+//@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -49,7 +49,7 @@ public class GlobalExceptionHandler {
     // Desafio resolvido: sem esse handler, qualquer erro não previsto (bug, NullPointerException etc.)
     // vazava cru pro cliente como HTML de erro do Tomcat/Spring - com stack trace incluso. Esse catch-all
     // garante que TODO erro da API sai no mesmo formato ErrorCustomResponse, mesmo os que a gente não previu.
-    @ExceptionHandler(Exception.class)
+//    @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorCustomResponse> handleGeneric(Exception ex) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, "Erro interno inesperado");
     }

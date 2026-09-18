@@ -44,16 +44,16 @@ Ao final, as três entidades devem ter:
 
 1. **Entidade rica** com máquina de estados própria (`setStatus()` ou equivalente), validando toda transição.
 2. Um **serviço especializado** só pra mudança de status (`ProjectStatusService`, `MilestoneStatusService`,
-   `TaskStatusService`), separado do serviço de CRUD (`ProjectService`, `MilestoneService`, `TaskService`).
+   `TaskStatusService`), separado do serviço de CRUD (`ProjectServiceImpl`, `MilestoneService`, `TaskService`).
 3. Um **endpoint `PATCH .../{id}/status`** dedicado, que só aceita o campo `status` — nada de nome, descrição, datas
    etc. (é o caso de uso real pro `PATCH`, ao contrário do `PUT`, que já vimos que substitui o recurso "quase
    inteiro").
 
 ---
 
-## 3. Por que separar num serviço especializado (não colocar em `ProjectService` etc.)
+## 3. Por que separar num serviço especializado (não colocar em `ProjectServiceImpl` etc.)
 
-- **Responsabilidade única**: `ProjectService` cuida de CRUD; a transição de status é uma decisão de negócio com
+- **Responsabilidade única**: `ProjectServiceImpl` cuida de CRUD; a transição de status é uma decisão de negócio com
   regras próprias, que só cresce (histórico de mudanças, notificações, futuras integrações). Isolar deixa isso fácil
   de testar e de evoluir sem inflar o serviço principal.
 - **Ponto único de entrada pra mudança de status**: hoje, se amanhã alguém adicionar `status` de volta no

@@ -430,12 +430,13 @@ public class ProjectService {
 ```
 
 `controller/ProjectController.java` — já com HATEOAS (`_links`) nos endpoints de leitura:
+
 ```java
 package br.com.fiap.t2tdsps.projectmgt.controller;
 
 import br.com.fiap.t2tdsps.projectmgt.assembler.ProjectModelAssembler;
 import br.com.fiap.t2tdsps.projectmgt.model.Project;
-import br.com.fiap.t2tdsps.projectmgt.service.ProjectService;
+import br.com.fiap.t2tdsps.projectmgt.service.ProjectServiceImpl;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
@@ -457,10 +458,10 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequestMapping("/api/projects")
 public class ProjectController {
 
-    private final ProjectService projectService;
+    private final ProjectServiceImpl projectService;
     private final ProjectModelAssembler assembler;
 
-    public ProjectController(ProjectService projectService, ProjectModelAssembler assembler) {
+    public ProjectController(ProjectServiceImpl projectService, ProjectModelAssembler assembler) {
         this.projectService = projectService;
         this.assembler = assembler;
     }

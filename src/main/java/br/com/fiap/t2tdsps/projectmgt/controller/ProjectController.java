@@ -7,8 +7,10 @@ import br.com.fiap.t2tdsps.projectmgt.mapper.ProjectMapper;
 import br.com.fiap.t2tdsps.projectmgt.model.Project;
 import br.com.fiap.t2tdsps.projectmgt.model.ProjectStatus;
 import br.com.fiap.t2tdsps.projectmgt.service.ProjectService;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -16,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/projects")
+@Validated
 public class ProjectController {
 
     private final ProjectService projectService;
@@ -66,7 +69,7 @@ public class ProjectController {
     }
 
     @PostMapping
-    public ResponseEntity<ProjectResponse> createProject(@RequestBody ProjectRequest request) {
+    public ResponseEntity<ProjectResponse> createProject(@RequestBody @Valid ProjectRequest request) {
         Project project = new Project();
         project.setName(request.name());
         project.setDescription(request.description());
@@ -75,7 +78,9 @@ public class ProjectController {
         project.setStatus(ProjectStatus.PLANEJADO); // toda criação começa como PLANEJADO - regra da própria entidade
 
         Project salvo = projectService.create(project);
-        return ResponseEntity.created(URI.create("/api/projects/" + salvo.getId())).body(ProjectMapper.toResponse(salvo));
+        return ResponseEntity.created(
+                URI.create("/api/projects/" + salvo.getId()))
+                .body(ProjectMapper.toResponse(salvo));
     }
 
     @PutMapping("/{id}")
