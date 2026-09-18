@@ -1,12 +1,14 @@
 package br.com.fiap.t2tdsps.projectmgt.configurations;
 
 import br.com.fiap.t2tdsps.projectmgt.dto.ErrorCustomResponse;
+import br.com.fiap.t2tdsps.projectmgt.dto.ValidationErrorResponse;
 import br.com.fiap.t2tdsps.projectmgt.exceptions.InvalidStatusTransitionException;
 import br.com.fiap.t2tdsps.projectmgt.exceptions.MilestoneAlreadyCompletedException;
 import br.com.fiap.t2tdsps.projectmgt.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -45,6 +47,32 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorCustomResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
+
+    //Exerc: implementar um exception handler para MethodArgumentNotValidException
+    public ResponseEntity<ValidationErrorResponse> handleArgumentNotValidException(MethodArgumentNotValidException ex){
+
+        //esperando de resultado
+        //{
+        //  "timestamp" : "....",
+        //   "status" : 400,
+        //    "error" : "Bad request",
+        //    "errors": [
+        //        {
+        //         "field": "...",
+        //         "message": "..."
+        //         },
+        //        {
+        //         "field": "...",
+        //         "message": "..."
+        //         }
+        // }
+
+// finalizamos na aula de exerc
+//        ex.getBindingResult().getFieldErrors()
+
+        return ResponseEntity.badRequest().body(null);
+    }
+
 
     // Desafio resolvido: sem esse handler, qualquer erro não previsto (bug, NullPointerException etc.)
     // vazava cru pro cliente como HTML de erro do Tomcat/Spring - com stack trace incluso. Esse catch-all
