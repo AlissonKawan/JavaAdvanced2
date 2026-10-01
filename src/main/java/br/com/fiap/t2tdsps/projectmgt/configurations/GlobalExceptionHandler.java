@@ -1,6 +1,7 @@
 package br.com.fiap.t2tdsps.projectmgt.configurations;
 
 import br.com.fiap.t2tdsps.projectmgt.dto.ErrorCustomResponse;
+import br.com.fiap.t2tdsps.projectmgt.dto.ErrorFieldCustom;
 import br.com.fiap.t2tdsps.projectmgt.dto.ValidationErrorResponse;
 import br.com.fiap.t2tdsps.projectmgt.exceptions.InvalidStatusTransitionException;
 import br.com.fiap.t2tdsps.projectmgt.exceptions.MilestoneAlreadyCompletedException;
@@ -8,14 +9,17 @@ import br.com.fiap.t2tdsps.projectmgt.exceptions.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-//@RestControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -48,29 +52,21 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+
     //Exerc: implementar um exception handler para MethodArgumentNotValidException
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponse> handleArgumentNotValidException(MethodArgumentNotValidException ex){
 
-        //esperando de resultado
-        //{
-        //  "timestamp" : "....",
-        //   "status" : 400,
-        //    "error" : "Bad request",
-        //    "errors": [
-        //        {
-        //         "field": "...",
-        //         "message": "..."
-        //         },
-        //        {
-        //         "field": "...",
-        //         "message": "..."
-        //         }
-        // }
+        List<ErrorFieldCustom> errors = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(fieldError -> new ErrorFieldCustom(
+                        fieldError.getField(),
+                        fieldError.getDefaultMessage()
+                ))
+                .toList();
 
-// finalizamos na aula de exerc
-//        ex.getBindingResult().getFieldErrors()
-
-        return ResponseEntity.badRequest().body(null);
+        return ResponseEntity.badRequest().body(new ValidationErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST.getReasonPhrase(), errors));
     }
 
 

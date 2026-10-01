@@ -6,5 +6,5 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-public record ValidationErrorResponse(LocalDateTime timestamp, int status, String error, List<FieldError> errors) {
+public record ValidationErrorResponse(LocalDateTime timestamp, int status, String error, List<ErrorFieldCustom> errors) {
 }
